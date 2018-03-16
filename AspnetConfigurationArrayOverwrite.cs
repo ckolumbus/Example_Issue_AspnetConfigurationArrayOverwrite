@@ -18,6 +18,7 @@ using System.Linq;
 // Requires NuGet package
 // Microsoft.Extensions.Configuration.Json
 using Microsoft.Extensions.Configuration;
+using System.Collections.Generic;
 
 public class AspnetConfigurationArrayOverwrite
 {
@@ -29,25 +30,19 @@ overwritten that are given in the config files being read
 later
 
 Setup: 
- * read appsettings.json with two entries in 'wizard'  array
- * read additaonal appsettings2.json with only one array entry in 'wizards'
+ * read appsettings.json with two entries in 'ipAddresses'  array
+ * read additional appsettings2.json with only one array entry in 'ipAddresses'
 
  * (My) Expected output: the array is replaced by the latest definition
    resulting in only one entry in the array
-    [wizards, ]
-    [wizards:0, ]
-    [wizards:0:Name, Houdini]
-    [wizards:0:Age, 300]
+    [ipAdresses:0, "127.0.0.1" ]
 
 * Real Output: only the first entry of the existing array is overwritten
-    [wizards, ]
-    [wizards:1, ]
-    [wizards:1:Name, Harry]
-    [wizards:1:Age, 17]
-    [wizards:0, ]
-    [wizards:0:Name, Houdini]
-    [wizards:0:Age, 300]
+    [ipAdresses:0, "127.0.0.1"]
+    [ipAdresses:1, "10.0.0.1" ]
 
+  only the first entry from `appsettings.json` ("192.168.56.1") has been
+  overwritten.
 
 Issues:
   when having multiple sources of configuration items it's somehwat
@@ -66,13 +61,14 @@ Issues:
 
         Configuration = builder.Build();
 
-        foreach (var i in Configuration.AsEnumerable()) {
+        var ipList = new List<string>();
+        Configuration.GetSection("ipAddresses").Bind(ipList);
+
+        //Console.WriteLine(ipList.Count);
+        foreach (var i in ipList) {
             Console.WriteLine(i);   
         }
         
-        Console.WriteLine();
-
-        Console.WriteLine("Press a key...");
-        Console.ReadKey();
+        
     }
 }
